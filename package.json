@@ -1,0 +1,12 @@
+{
+  "name": "verbolandia",
+  "version": "1.0.0",
+  "description": "Тренажёр испанских глаголов — Telegram Mini App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
