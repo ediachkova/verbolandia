@@ -244,7 +244,12 @@ app.get('/api/verbs', async (req, res) => {
       'SELECT id, infinitive, ru, type, frequency FROM verbs ORDER BY infinitive'
     );
     const { rows: conjRows } = await pool.query(
-      'SELECT verb_id, tense, p0,p1,p2,p3,p4,p5, p0_ru,p1_ru,p2_ru,p3_ru,p4_ru,p5_ru FROM conjugations'
+      `SELECT verb_id, tense,
+         p0, p1, p2, p3, p4, p5,
+         COALESCE(p0_ru,'') p0_ru, COALESCE(p1_ru,'') p1_ru,
+         COALESCE(p2_ru,'') p2_ru, COALESCE(p3_ru,'') p3_ru,
+         COALESCE(p4_ru,'') p4_ru, COALESCE(p5_ru,'') p5_ru
+       FROM conjugations`
     );
 
     // Собираем в объект { hablar: { ru, type, presente: [...], ... } }
@@ -256,7 +261,10 @@ app.get('/api/verbs', async (req, res) => {
       const verb = verbRows.find(v => v.id === c.verb_id);
       if (verb) {
         result[verb.infinitive][c.tense] = [c.p0, c.p1, c.p2, c.p3, c.p4, c.p5];
-        result[verb.infinitive][c.tense + '_ru'] = [c.p0_ru, c.p1_ru, c.p2_ru, c.p3_ru, c.p4_ru, c.p5_ru];
+        const ruForms = [c.p0_ru, c.p1_ru, c.p2_ru, c.p3_ru, c.p4_ru, c.p5_ru];
+        if (ruForms.some(Boolean)) {
+          result[verb.infinitive][c.tense + '_ru'] = ruForms;
+        }
       }
     }
 
