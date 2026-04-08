@@ -63,7 +63,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .quiz-body { flex: 1; display: flex; flex-direction: column; padding: 12px 16px 16px; gap: 12px; overflow-y: auto; }
 
 .question-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 22px 20px; }
-.tense-tag { display: inline-block; background: rgba(232,168,56,.15); color: var(--accent); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px; letter-spacing: .04em; }
+.tense-tag { display: inline-flex; flex-direction: column; background: rgba(232,168,56,.15); color: var(--accent); font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: 20px; margin-bottom: 12px; letter-spacing: .01em; line-height: 1.3; }
+.tense-tag-ru { font-size: 11px; font-weight: 400; opacity: .75; margin-top: 1px; }
 .verb-main { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--text); line-height: 1.1; }
 .verb-ru { font-size: 14px; color: var(--muted); margin-top: 4px; }
 .pronoun-row { margin-top: 14px; display: flex; align-items: center; gap: 8px; }
@@ -140,6 +141,14 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div class="chip" data-key="subjuntivo">Subjuntivo</div>
       </div>
 
+      <div class="section-label">Список глаголов</div>
+      <div class="chip-group" id="freq-chips">
+        <div class="chip on" data-freq="top50">Топ 50</div>
+        <div class="chip" data-freq="top100">Топ 100</div>
+        <div class="chip" data-freq="top200">Топ 200</div>
+        <div class="chip" data-freq="all">Все</div>
+      </div>
+
       <div class="section-label">Тип глаголов</div>
       <div class="chip-group" id="type-chips">
         <div class="chip on amber" data-key="regular">Правильные</div>
@@ -178,7 +187,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     </div>
     <div class="quiz-body">
       <div class="question-card">
-        <div class="tense-tag" id="q-tense">Presente</div>
+        <div class="tense-tag" id="q-tense">Presente<span class="tense-tag-ru" id="q-tense-ru">Настоящее время</span></div>
         <div class="verb-main" id="q-verb">hablar</div>
         <div class="verb-ru" id="q-ru">говорить</div>
         <div class="pronoun-row">
@@ -236,11 +245,29 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0f0e17'); tg.setBackgroundColor('#0f0e17'); }
 
-const TENSE_LABELS = {
-  presente:"Presente", indefinido:"Pret. Indefinido",
-  imperfecto:"Pret. Imperfecto", futuro:"Futuro Simple",
-  condicional:"Condicional", subjuntivo:"Subjuntivo Presente"
+// Загружается с /api/tenses, содержит name_es и name_ru
+let TENSE_META = {
+  presente:         { es: "Presente",                    ru: "Настоящее время" },
+  perfecto:         { es: "Pretérito Perfecto",          ru: "Прошедшее совершённое" },
+  indefinido:       { es: "Pretérito Indefinido",        ru: "Прошедшее неопределённое" },
+  imperfecto:       { es: "Pretérito Imperfecto",        ru: "Прошедшее несовершённое" },
+  pluscuamperfecto: { es: "Pretérito Pluscuamperfecto",  ru: "Давнопрошедшее время" },
+  anterior:         { es: "Pretérito Anterior",          ru: "Предшествующее прошедшее" },
+  futuro_simple:    { es: "Futuro Simple",               ru: "Будущее простое" },
+  futuro_compuesto: { es: "Futuro Compuesto",            ru: "Будущее сложное" },
+  condicional:      { es: "Condicional Simple",          ru: "Условное простое" },
+  condicional_comp: { es: "Condicional Compuesto",       ru: "Условное сложное" },
+  imperativo_af:    { es: "Imperativo Afirmativo",       ru: "Повелительное утвердительное" },
+  imperativo_neg:   { es: "Imperativo Negativo",         ru: "Повелительное отрицательное" },
+  subj_presente:    { es: "Subjuntivo Presente",         ru: "Сослагательное настоящее" },
+  subj_perfecto:    { es: "Subjuntivo Perfecto",         ru: "Сослагательное совершённое" },
+  subj_imperfecto:  { es: "Subjuntivo Imperfecto",       ru: "Сослагательное несовершённое" },
+  subj_pluscuamp:   { es: "Subjuntivo Pluscuamperfecto", ru: "Сослагательное давнопрошедшее" },
 };
+// Обновляем из API если доступно
+fetch('/api/tenses').then(r => r.json()).then(rows => {
+  rows.forEach(t => { TENSE_META[t.key] = { es: t.name_es, ru: t.name_ru }; });
+}).catch(() => {});
 const PRONOUNS = ["yo","tú","él/ella","nosotros","vosotros","ellos/ellas"];
 const SESSION_LENGTH = 20;
 
@@ -416,7 +443,7 @@ const VERBS = {
 };
 
 // ─── State ───────────────────────────────────
-let cfg     = { tenses: new Set(["presente","indefinido"]), types: new Set(["regular"]), mode: "choose" };
+let cfg     = { tenses: new Set(["presente","indefinido"]), types: new Set(["regular"]), mode: "choose", frequency: "top50" };
 let stats   = { total: 0, correct: 0, streak: 0, record: 0 };
 let session = { total: 0, correct: 0 };
 let currentQ = null;
@@ -430,14 +457,25 @@ function shuffle(a) {
   return a;
 }
 
+// Глаголы вхдящие в выбранный топ (накопительно)
+const FREQ_ORDER = ['top50','top100','top200','all'];
+function freqFilter(d) {
+  const sel = cfg.frequency;
+  const allowed = FREQ_ORDER.slice(0, FREQ_ORDER.indexOf(sel) + 1);
+  return allowed.includes(d.frequency || 'all');
+}
+
 function makeQuestion() {
-  const pool  = Object.entries(VERBS).filter(([, d]) => cfg.types.has(d.type));
-  const valid = pool.filter(([, d]) => [...cfg.tenses].some(t => d[t]));
+  let pool = Object.entries(VERBS).filter(([, d]) => cfg.types.has(d.type) && freqFilter(d));
+  let valid = pool.filter(([, d]) => [...cfg.tenses].some(t => d[t]));
+  // fallback — если фильтр слишком строгий, берём всё
+  if (!valid.length) valid = Object.entries(VERBS).filter(([, d]) => [...cfg.tenses].some(t => d[t]));
   if (!valid.length) return null;
   const [verb, data] = rand(valid);
   const tense = rand([...cfg.tenses].filter(t => data[t]));
   const pIdx  = Math.floor(Math.random() * 6);
-  return { verb, ru: data.ru, tense, pIdx, pronoun: PRONOUNS[pIdx], answer: data[tense][pIdx] };
+  const formRu = (data[tense + '_ru'] && data[tense + '_ru'][pIdx]) || null;
+  return { verb, ru: data.ru, tense, pIdx, pronoun: PRONOUNS[pIdx], answer: data[tense][pIdx], formRu };
 }
 
 /**
@@ -486,6 +524,15 @@ document.querySelectorAll('#type-chips .chip').forEach(c => {
     else { cfg.types.add(k); c.classList.add('on'); }
   });
 });
+// Фильтр по частоте — одиночный выбор
+document.querySelectorAll('#freq-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#freq-chips .chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    cfg.frequency = c.dataset.freq;
+  });
+});
+
 document.querySelectorAll('.mode-card').forEach(c => {
   c.addEventListener('click', () => {
     document.querySelectorAll('.mode-card').forEach(x => x.classList.remove('on'));
@@ -511,7 +558,9 @@ function loadQuestion() {
   currentQ = makeQuestion();
   if (!currentQ) return;
 
-  document.getElementById('q-tense').textContent   = TENSE_LABELS[currentQ.tense];
+  const tm = TENSE_META[currentQ.tense] || { es: currentQ.tense, ru: '' };
+  document.getElementById('q-tense').childNodes[0].textContent = tm.es;
+  document.getElementById('q-tense-ru').textContent = tm.ru;
   document.getElementById('q-verb').textContent    = currentQ.verb;
   document.getElementById('q-ru').textContent      = currentQ.ru;
   document.getElementById('q-pronoun').textContent = currentQ.pronoun;
@@ -595,8 +644,24 @@ function handleResult(ok, correctForm) {
 
   const fb = document.getElementById('feedback');
   fb.className = 'feedback-card ' + (ok ? 'ok' : 'err') + ' show';
-  document.getElementById('fb-correct').textContent = ok ? '✅ Верно!' : '❌ Неверно';
-  document.getElementById('fb-msg').textContent     = ok ? currentQ.answer : 'Правильно: ' + correctForm;
+
+  const form    = currentQ.answer;
+  const formRu  = currentQ.formRu;   // готовый перевод из БД
+  const ruPart  = formRu ? ` — ${formRu}` : '';
+
+  if (ok) {
+    document.getElementById('fb-correct').textContent = '✅ Верно!';
+    document.getElementById('fb-msg').innerHTML =
+      `<span style="font-size:17px;font-weight:500">${currentQ.pronoun} ${form}</span>` +
+      `<span style="opacity:.7">${ruPart}</span>`;
+  } else {
+    // для неверного ответа показываем правильную форму с переводом
+    const correctRu = formRu ? ` — ${formRu}` : '';
+    document.getElementById('fb-correct').textContent = '❌ Неверно';
+    document.getElementById('fb-msg').innerHTML =
+      `Правильно: <span style="font-weight:500">${currentQ.pronoun} ${correctForm}</span>` +
+      `<span style="opacity:.7">${correctRu}</span>`;
+  }
   document.getElementById('fb-streak').textContent  = `Серия: ${stats.streak}  ·  Рекорд: ${stats.record}`;
 
   if (tg) tg.HapticFeedback?.impactOccurred(ok ? 'medium' : 'light');
