@@ -131,14 +131,32 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       </div>
     </div>
     <div class="scroll-body">
-      <div class="section-label">Времена</div>
+      <div class="section-label">Modo Indicativo</div>
       <div class="chip-group" id="tense-chips">
-        <div class="chip on" data-key="presente">Presente</div>
-        <div class="chip on" data-key="indefinido">Indefinido</div>
-        <div class="chip" data-key="imperfecto">Imperfecto</div>
-        <div class="chip" data-key="futuro">Futuro</div>
-        <div class="chip" data-key="condicional">Condicional</div>
-        <div class="chip" data-key="subjuntivo">Subjuntivo</div>
+        <div class="chip on"  data-key="presente">Presente</div>
+        <div class="chip"     data-key="perfecto">Pret. Perfecto</div>
+        <div class="chip on"  data-key="indefinido">Pret. Indefinido</div>
+        <div class="chip"     data-key="imperfecto">Pret. Imperfecto</div>
+        <div class="chip"     data-key="pluscuamperfecto">Pluscuamperfecto</div>
+        <div class="chip"     data-key="anterior">Pret. Anterior</div>
+        <div class="chip"     data-key="futuro_simple">Futuro Simple</div>
+        <div class="chip"     data-key="futuro_compuesto">Futuro Compuesto</div>
+        <div class="chip"     data-key="condicional">Condicional Simple</div>
+        <div class="chip"     data-key="condicional_comp">Condicional Compuesto</div>
+      </div>
+
+      <div class="section-label">Modo Imperativo</div>
+      <div class="chip-group" id="tense-chips-imp">
+        <div class="chip"     data-key="imperativo_af">Imperativo Afirmativo</div>
+        <div class="chip"     data-key="imperativo_neg">Imperativo Negativo</div>
+      </div>
+
+      <div class="section-label">Modo Subjuntivo</div>
+      <div class="chip-group" id="tense-chips-subj">
+        <div class="chip"     data-key="subj_presente">Subjuntivo Presente</div>
+        <div class="chip"     data-key="subj_perfecto">Subjuntivo Perfecto</div>
+        <div class="chip"     data-key="subj_imperfecto">Subjuntivo Imperfecto</div>
+        <div class="chip"     data-key="subj_pluscuamp">Subjuntivo Pluscuamperf.</div>
       </div>
 
       <div class="section-label">Список глаголов</div>
@@ -342,7 +360,7 @@ function wrongOptions(verb, tense, correct, pIdx) {
 
   // Если меньше 3 — добираем из других времён того же глагола
   if (pool.length < 3) {
-    const otherTenses = Object.keys(TENSE_LABELS).filter(t => t !== tense && data[t]);
+    const otherTenses = Object.keys(TENSE_META).filter(t => t !== tense && data[t]);
     for (const t of shuffle([...otherTenses])) {
       pool.push(...data[t]);
       if (pool.length >= 6) break;
@@ -361,13 +379,7 @@ function show(id) {
 }
 
 // ─── Settings ────────────────────────────────
-document.querySelectorAll('#tense-chips .chip').forEach(c => {
-  c.addEventListener('click', () => {
-    const k = c.dataset.key;
-    if (cfg.tenses.has(k)) { if (cfg.tenses.size > 1) { cfg.tenses.delete(k); c.classList.remove('on'); } }
-    else { cfg.tenses.add(k); c.classList.add('on'); }
-  });
-});
+
 document.querySelectorAll('#type-chips .chip').forEach(c => {
   c.addEventListener('click', () => {
     const k = c.dataset.key;
@@ -375,6 +387,18 @@ document.querySelectorAll('#type-chips .chip').forEach(c => {
     else { cfg.types.add(k); c.classList.add('on'); }
   });
 });
+// Чипы времён — все три группы
+document.querySelectorAll('#tense-chips .chip, #tense-chips-imp .chip, #tense-chips-subj .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    const k = c.dataset.key;
+    if (cfg.tenses.has(k)) {
+      if (cfg.tenses.size > 1) { cfg.tenses.delete(k); c.classList.remove('on'); }
+    } else {
+      cfg.tenses.add(k); c.classList.add('on');
+    }
+  });
+});
+
 // Фильтр по частоте — одиночный выбор
 document.querySelectorAll('#freq-chips .chip').forEach(c => {
   c.addEventListener('click', () => {
