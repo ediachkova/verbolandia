@@ -114,6 +114,30 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .res-btn:active { opacity: .85; }
 .res-btn.primary   { background: var(--accent); color: var(--bg); }
 .res-btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+/* accordion */
+.accordion { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 6px; }
+.accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; cursor: pointer; background: var(--surface); user-select: none; }
+.accordion-header .acc-title { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.accordion-header .acc-arrow { font-size: 11px; color: var(--muted); transition: transform .2s; }
+.accordion-header.open .acc-arrow { transform: rotate(180deg); }
+.accordion-header .acc-badge { font-size: 11px; background: var(--accent2); color: #fff; border-radius: 20px; padding: 1px 8px; margin-left: 8px; }
+.accordion-body { display: none; padding: 10px 12px 12px; }
+.accordion-body.open { display: block; }
+/* count picker */
+.count-picker { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.cnt-btn { padding: 9px 4px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 500; color: var(--muted); background: var(--surface); cursor: pointer; text-align: center; transition: all .15s; }
+.cnt-btn.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+/* arrange mode */
+.arrange-area { display: flex; flex-direction: column; gap: 10px; }
+.arrange-pronouns { display: flex; flex-direction: column; gap: 6px; }
+.arrange-row { display: flex; align-items: center; gap: 8px; }
+.arrange-pronoun { font-size: 13px; font-weight: 500; color: var(--accent2); min-width: 80px; flex-shrink: 0; }
+.arrange-input { flex: 1; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 15px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+.arrange-input:focus { border-color: var(--accent2); }
+.arrange-input.ok  { border-color: var(--green); background: rgba(62,207,142,.08); color: var(--green); }
+.arrange-input.err { border-color: var(--red);   background: rgba(245,101,101,.07); color: var(--red); }
+.arrange-check-btn { background: var(--accent2); color: #fff; border: none; border-radius: var(--radius); padding: 13px; font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -131,34 +155,78 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       </div>
     </div>
     <div class="scroll-body">
-      <div class="section-label">Modo Indicativo</div>
-      <div class="chip-group" id="tense-chips">
-        <div class="chip on"  data-key="presente">Presente</div>
-        <div class="chip"     data-key="perfecto">Pret. Perfecto</div>
-        <div class="chip on"  data-key="indefinido">Pret. Indefinido</div>
-        <div class="chip"     data-key="imperfecto">Pret. Imperfecto</div>
-        <div class="chip"     data-key="pluscuamperfecto">Pluscuamperfecto</div>
-        <div class="chip"     data-key="anterior">Pret. Anterior</div>
-        <div class="chip"     data-key="futuro_simple">Futuro Simple</div>
-        <div class="chip"     data-key="futuro_compuesto">Futuro Compuesto</div>
-        <div class="chip"     data-key="condicional">Condicional Simple</div>
-        <div class="chip"     data-key="condicional_comp">Condicional Compuesto</div>
+
+      <!-- Времена — аккордеон -->
+      <div class="section-label">Времена</div>
+
+      <div class="accordion">
+        <div class="accordion-header" id="acc-indicativo">
+          <span class="acc-title">Modo Indicativo</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span class="acc-badge" id="badge-indicativo">2</span>
+            <span class="acc-arrow">▼</span>
+          </span>
+        </div>
+        <div class="accordion-body open" id="body-indicativo">
+          <div class="chip-group" id="tense-chips">
+            <div class="chip on"  data-key="presente">Presente</div>
+            <div class="chip"     data-key="perfecto">Pret. Perfecto</div>
+            <div class="chip on"  data-key="indefinido">Pret. Indefinido</div>
+            <div class="chip"     data-key="imperfecto">Pret. Imperfecto</div>
+            <div class="chip"     data-key="pluscuamperfecto">Pluscuamperfecto</div>
+            <div class="chip"     data-key="anterior">Pret. Anterior</div>
+            <div class="chip"     data-key="futuro_simple">Futuro Simple</div>
+            <div class="chip"     data-key="futuro_compuesto">Futuro Compuesto</div>
+            <div class="chip"     data-key="condicional">Condicional Simple</div>
+            <div class="chip"     data-key="condicional_comp">Condicional Compuesto</div>
+          </div>
+        </div>
       </div>
 
-      <div class="section-label">Modo Imperativo</div>
-      <div class="chip-group" id="tense-chips-imp">
-        <div class="chip"     data-key="imperativo_af">Imperativo Afirmativo</div>
-        <div class="chip"     data-key="imperativo_neg">Imperativo Negativo</div>
+      <div class="accordion">
+        <div class="accordion-header" id="acc-imperativo">
+          <span class="acc-title">Modo Imperativo</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span class="acc-badge" id="badge-imperativo" style="display:none">0</span>
+            <span class="acc-arrow">▼</span>
+          </span>
+        </div>
+        <div class="accordion-body" id="body-imperativo">
+          <div class="chip-group" id="tense-chips-imp">
+            <div class="chip" data-key="imperativo_af">Imperativo Afirmativo</div>
+            <div class="chip" data-key="imperativo_neg">Imperativo Negativo</div>
+          </div>
+        </div>
       </div>
 
-      <div class="section-label">Modo Subjuntivo</div>
-      <div class="chip-group" id="tense-chips-subj">
-        <div class="chip"     data-key="subj_presente">Subjuntivo Presente</div>
-        <div class="chip"     data-key="subj_perfecto">Subjuntivo Perfecto</div>
-        <div class="chip"     data-key="subj_imperfecto">Subjuntivo Imperfecto</div>
-        <div class="chip"     data-key="subj_pluscuamp">Subjuntivo Pluscuamperf.</div>
+      <div class="accordion">
+        <div class="accordion-header" id="acc-subjuntivo">
+          <span class="acc-title">Modo Subjuntivo</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span class="acc-badge" id="badge-subjuntivo" style="display:none">0</span>
+            <span class="acc-arrow">▼</span>
+          </span>
+        </div>
+        <div class="accordion-body" id="body-subjuntivo">
+          <div class="chip-group" id="tense-chips-subj">
+            <div class="chip" data-key="subj_presente">Subjuntivo Presente</div>
+            <div class="chip" data-key="subj_perfecto">Subjuntivo Perfecto</div>
+            <div class="chip" data-key="subj_imperfecto">Subjuntivo Imperfecto</div>
+            <div class="chip" data-key="subj_pluscuamp">Subjuntivo Pluscuamperf.</div>
+          </div>
+        </div>
       </div>
 
+      <!-- Количество вопросов -->
+      <div class="section-label">Количество вопросов</div>
+      <div class="count-picker">
+        <div class="cnt-btn" data-count="10">10</div>
+        <div class="cnt-btn on" data-count="20">20</div>
+        <div class="cnt-btn" data-count="30">30</div>
+        <div class="cnt-btn" data-count="50">50</div>
+      </div>
+
+      <!-- Список глаголов -->
       <div class="section-label">Список глаголов</div>
       <div class="chip-group" id="freq-chips">
         <div class="chip on" data-freq="top50">Топ 50</div>
@@ -167,6 +235,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div class="chip" data-freq="all">Все</div>
       </div>
 
+      <!-- Тип глаголов -->
       <div class="section-label">Тип глаголов</div>
       <div class="chip-group" id="type-chips">
         <div class="chip on amber" data-key="regular">Правильные</div>
@@ -174,6 +243,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div class="chip amber" data-key="reflexive">Возвратные</div>
       </div>
 
+      <!-- Режим -->
       <div class="section-label">Режим</div>
       <div class="mode-cards">
         <div class="mode-card on" data-mode="choose">
@@ -185,6 +255,11 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
           <div class="mc-icon">✏️</div>
           <div class="mc-title">Вписать форму</div>
           <div class="mc-sub">Свободный ввод</div>
+        </div>
+        <div class="mode-card" data-mode="arrange">
+          <div class="mc-icon">📋</div>
+          <div class="mc-title">Все формы</div>
+          <div class="mc-sub">Вписать все 6 лиц</div>
         </div>
       </div>
     </div>
@@ -237,6 +312,20 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div id="fb-msg"></div>
         <div class="fb-streak" id="fb-streak"></div>
       </div>
+      <div id="arrange-area" class="arrange-area" style="display:none">
+        <div class="special-keys" id="arrange-keys">
+          <div class="skey" data-char="á">á</div>
+          <div class="skey" data-char="é">é</div>
+          <div class="skey" data-char="í">í</div>
+          <div class="skey" data-char="ó">ó</div>
+          <div class="skey" data-char="ú">ú</div>
+          <div class="skey" data-char="ü">ü</div>
+          <div class="skey" data-char="ñ">ñ</div>
+        </div>
+        <div class="arrange-pronouns" id="arrange-pronouns"></div>
+        <button class="arrange-check-btn" id="arrange-check-btn">Проверить все →</button>
+      </div>
+
       <button class="next-btn" id="next-btn">Следующий →</button>
     </div>
   </div>
@@ -283,7 +372,7 @@ let TENSE_META = {
   subj_pluscuamp:   { es: "Subjuntivo Pluscuamperfecto", ru: "Сослагательное давнопрошедшее" },
 };
 const PRONOUNS = ["yo","tú","él/ella","nosotros","vosotros","ellos/ellas"];
-const SESSION_LENGTH = 20;
+// SESSION_LENGTH теперь cfg.sessionLength
 
 // ─── Глаголы загружаются с API ───────────────────────────────
 let VERBS = {};
@@ -312,7 +401,7 @@ async function loadVerbs() {
 loadVerbs();
 
 // ─── State ───────────────────────────────────
-let cfg     = { tenses: new Set(["presente","indefinido"]), types: new Set(["regular"]), mode: "choose", frequency: "top50" };
+let cfg     = { tenses: new Set(["presente","indefinido"]), types: new Set(["regular"]), mode: "choose", frequency: "top50", sessionLength: 20 };
 let stats   = { total: 0, correct: 0, streak: 0, record: 0 };
 let session = { total: 0, correct: 0 };
 let currentQ = null;
@@ -396,6 +485,7 @@ document.querySelectorAll('#tense-chips .chip, #tense-chips-imp .chip, #tense-ch
     } else {
       cfg.tenses.add(k); c.classList.add('on');
     }
+    updateAccordionBadges();
   });
 });
 
@@ -413,6 +503,46 @@ document.querySelectorAll('.mode-card').forEach(c => {
     document.querySelectorAll('.mode-card').forEach(x => x.classList.remove('on'));
     c.classList.add('on');
     cfg.mode = c.dataset.mode;
+  });
+});
+
+// ─── Accordion ───────────────────────────────
+document.querySelectorAll('.accordion-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const id = header.id.replace('acc-', '');
+    const body = document.getElementById('body-' + id);
+    const isOpen = body.classList.toggle('open');
+    header.classList.toggle('open', isOpen);
+  });
+  // init open state
+  const id = header.id.replace('acc-', '');
+  const body = document.getElementById('body-' + id);
+  if (body && body.classList.contains('open')) header.classList.add('open');
+});
+
+function updateAccordionBadges() {
+  const groups = {
+    indicativo: ['presente','perfecto','indefinido','imperfecto','pluscuamperfecto','anterior','futuro_simple','futuro_compuesto','condicional','condicional_comp'],
+    imperativo: ['imperativo_af','imperativo_neg'],
+    subjuntivo: ['subj_presente','subj_perfecto','subj_imperfecto','subj_pluscuamp'],
+  };
+  for (const [grp, keys] of Object.entries(groups)) {
+    const count = keys.filter(k => cfg.tenses.has(k)).length;
+    const badge = document.getElementById('badge-' + grp);
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+  }
+}
+updateAccordionBadges();
+
+// ─── Count picker ─────────────────────────────
+document.querySelectorAll('.cnt-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.cnt-btn').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    cfg.sessionLength = parseInt(b.dataset.count);
   });
 });
 
@@ -440,23 +570,29 @@ function loadQuestion() {
   document.getElementById('q-ru').textContent      = currentQ.ru;
   document.getElementById('q-pronoun').textContent = currentQ.pronoun;
 
-  const pct = Math.round(session.total / SESSION_LENGTH * 100);
+  const pct = Math.round(session.total / cfg.sessionLength * 100);
   document.getElementById('prog-fill').style.width = pct + '%';
 
   document.getElementById('feedback').className = 'feedback-card';
   document.getElementById('next-btn').className  = 'next-btn';
 
-  if (cfg.mode === 'choose') {
-    document.getElementById('choose-area').style.display = '';
-    document.getElementById('type-area').style.display   = 'none';
+  const isChoose  = cfg.mode === 'choose';
+  const isType    = cfg.mode === 'type';
+  const isArrange = cfg.mode === 'arrange';
+
+  document.getElementById('choose-area').style.display  = isChoose  ? '' : 'none';
+  document.getElementById('type-area').style.display    = isType    ? '' : 'none';
+  document.getElementById('arrange-area').style.display = isArrange ? '' : 'none';
+
+  if (isChoose) {
     buildOptions();
-  } else {
-    document.getElementById('choose-area').style.display = 'none';
-    document.getElementById('type-area').style.display   = '';
+  } else if (isType) {
     const inp = document.getElementById('verb-input');
     inp.value = ''; inp.className = 'verb-input'; inp.disabled = false;
     document.getElementById('check-btn').disabled = false;
     setTimeout(() => inp.focus(), 120);
+  } else if (isArrange) {
+    buildArrange();
   }
 }
 
@@ -542,12 +678,12 @@ function handleResult(ok, correctForm) {
   if (tg) tg.HapticFeedback?.impactOccurred(ok ? 'medium' : 'light');
 
   const nb = document.getElementById('next-btn');
-  nb.textContent = session.total >= SESSION_LENGTH ? 'Завершить →' : 'Следующий →';
+  nb.textContent = session.total >= cfg.sessionLength ? 'Завершить →' : 'Следующий →';
   nb.className   = 'next-btn show';
 }
 
 document.getElementById('next-btn').addEventListener('click', () => {
-  session.total >= SESSION_LENGTH ? showResults() : loadQuestion();
+  session.total >= cfg.sessionLength ? showResults() : loadQuestion();
 });
 
 function updateCounters() {
@@ -573,6 +709,109 @@ function showResults() {
   document.getElementById('res-sub').textContent    = sub;
   show('results');
 }
+
+// ─── Arrange mode ─────────────────────────────
+function buildArrange() {
+  const { verb, tense } = currentQ;
+  const forms = VERBS[verb] && VERBS[verb][tense] ? VERBS[verb][tense] : [];
+  const container = document.getElementById('arrange-pronouns');
+  container.innerHTML = '';
+
+  // Special keys focus tracking
+  let focusedInput = null;
+  document.querySelectorAll('#arrange-keys .skey').forEach(k => {
+    k.addEventListener('click', () => {
+      if (!focusedInput) return;
+      const pos = focusedInput.selectionStart;
+      focusedInput.value = focusedInput.value.slice(0, pos) + k.dataset.char + focusedInput.value.slice(focusedInput.selectionEnd);
+      focusedInput.selectionStart = focusedInput.selectionEnd = pos + 1;
+      focusedInput.focus();
+    });
+  });
+
+  PRONOUNS.forEach((pronoun, i) => {
+    if (forms[i] === null || forms[i] === undefined) return; // skip yo for imperativo
+    const row = document.createElement('div');
+    row.className = 'arrange-row';
+    row.innerHTML = `<span class="arrange-pronoun">${pronoun}</span>
+      <input class="arrange-input" data-idx="${i}" type="text"
+        placeholder="…" autocomplete="off" autocorrect="off" spellcheck="false">`;
+    container.appendChild(row);
+    const inp = row.querySelector('input');
+    inp.addEventListener('focus', () => { focusedInput = inp; });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        // Move to next input
+        const inputs = [...container.querySelectorAll('.arrange-input')];
+        const idx = inputs.indexOf(inp);
+        if (idx < inputs.length - 1) inputs[idx + 1].focus();
+        else checkArrange();
+      }
+    });
+  });
+
+  document.getElementById('arrange-check-btn').disabled = false;
+  document.getElementById('arrange-check-btn').style.display = 'block';
+
+  // Focus first input
+  const first = container.querySelector('.arrange-input');
+  if (first) setTimeout(() => first.focus(), 120);
+}
+
+function checkArrange() {
+  const { verb, tense } = currentQ;
+  const forms  = VERBS[verb][tense];
+  const ruForms = VERBS[verb][tense + '_ru'] || [];
+  const inputs = document.querySelectorAll('#arrange-pronouns .arrange-input');
+
+  let correctCount = 0;
+  let total = 0;
+
+  inputs.forEach(inp => {
+    const i   = parseInt(inp.dataset.idx);
+    const ans = inp.value.trim().toLowerCase();
+    const cor = (forms[i] || '').toLowerCase();
+    inp.disabled = true;
+    total++;
+    if (ans === cor) {
+      inp.classList.add('ok');
+      correctCount++;
+    } else {
+      inp.classList.add('err');
+      inp.value = forms[i]; // show correct answer
+    }
+  });
+
+  // Count as one question result
+  const allOk = correctCount === total;
+  session.total++; stats.total++;
+  if (allOk) {
+    session.correct++; stats.correct++;
+    stats.streak++; stats.record = Math.max(stats.record, stats.streak);
+  } else {
+    stats.streak = 0;
+  }
+  updateCounters();
+
+  document.getElementById('arrange-check-btn').style.display = 'none';
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback-card ' + (allOk ? 'ok' : 'err') + ' show';
+  document.getElementById('fb-correct').textContent = allOk
+    ? `✅ Верно! Все ${total} форм правильно`
+    : `❌ Ошибок: ${total - correctCount} из ${total}`;
+  document.getElementById('fb-msg').textContent = '';
+  document.getElementById('fb-streak').textContent = `Серия: ${stats.streak}  ·  Рекорд: ${stats.record}`;
+
+  if (tg) tg.HapticFeedback?.impactOccurred(allOk ? 'medium' : 'light');
+
+  const nb = document.getElementById('next-btn');
+  nb.textContent = session.total >= cfg.sessionLength ? 'Завершить →' : 'Следующий →';
+  nb.className = 'next-btn show';
+}
+
+document.getElementById('arrange-check-btn').addEventListener('click', checkArrange);
+
 </script>
 </body>
 </html>
